@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import utilitarios.Event;
 import utilitarios.Job;
 import utilitarios.RoundQueue;
 import utilitarios.WaitingQueue;
@@ -21,7 +22,29 @@ public class SimSO {
     public static void main(String[] args) {
         //testarWaitingQueue();
         //testarRoundQueue();
-        testarMemoria();
+        //testarMemoria();
+        testarEvento();
+    }
+    
+    public static void testarEvento() {
+        Map<Integer, List<Integer>> depen1;
+        depen1 = new HashMap<>();
+        List<Integer> list1 = new ArrayList<>();
+        list1.add(1);
+        list1.add(2);
+        list1.add(3);
+        List<Integer> list11 = new ArrayList<>();
+        list11.add(0);
+        list11.add(3);
+        depen1.put(0, list1);
+        depen1.put(1, list11);
+        int[] v1 = {1, 2, 3, 4};
+        
+        Job job1 = new Job(5, 0, 1, 1, "Job1", v1, depen1);
+        
+        Event event = new Event(Event.EventType.START, job1, 0);
+        
+        System.out.println(event.toString());
     }
     
     public static void testarMemoria() {

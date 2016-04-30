@@ -10,10 +10,11 @@ import java.util.Random;
  */
 public class Job implements Comparable<Job> {
     private final int arrivalTime;            // tempo de chegada
-    private final int processingTime;         // tempo de cpu
+    private int processingTime;         // tempo de cpu
     private final int priority;               // prioridade
     private int currentSegment;               // segmento atual
     private int totalNeededSpace;             // espaco total utilizado
+    private int numChamadasEntradaSaida;       // contabiliza o numero de chamadas de entrada e saida
     private final int[] segments;             // armazena os segmentos necessarios (cada posicao do array e o tamanho do segmento)
     private final String jobName;             // nome do Job
     private final Map<Integer, List<Integer>> segmentDependencies;    //Mapa com dependencia de segmentos
@@ -31,6 +32,14 @@ public class Job implements Comparable<Job> {
         this.currentSegment = currentSegment;
         
         calculateTotalNeededSpace();
+    }
+    
+    public int getProcessingTime() {
+        return processingTime;
+    }
+    
+    public void decrementProcessingTime(int step) {
+        this.processingTime -= step;
     }
     
     public int getNextSegment() {

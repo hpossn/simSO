@@ -49,6 +49,10 @@ public class RoundQueue {
         return roundRobin.remove(0);
     }
     
+    public boolean removeSpecificJob(Job job) {
+        return roundRobin.remove(job);
+    }
+    
     public boolean isEmpty() {
         return roundRobin.isEmpty();
     }

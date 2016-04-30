@@ -52,6 +52,10 @@ public class WaitingQueue {
         */
     }
     
+    public boolean isEmpty() {
+        return linkedList.isEmpty();
+    }
+    
     @Override
     public String toString() {
         StringBuilder msg = new StringBuilder();
@@ -62,6 +66,9 @@ public class WaitingQueue {
             msg.append(t.getJob().toString());
             msg.append("\n");
         });
+        
+        if(linkedList.isEmpty())
+            msg.append("Nenhum\n");
         
         return msg.toString();
     }

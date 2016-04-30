@@ -54,6 +54,7 @@ public class Memory {
         if(!hasSegment(job.getJobName(), job.getCurrentSegment())) {
             blockList.add(new MemoryBlock(job.getJobName(), job.getCurrentSegment(), job.getCurrentSegmentSize()));
             freeSize -= job.getCurrentSegmentSize();
+            runningTime += realocTime;
         }
         
         List<Integer> dependencies = job.getCurrentSegmentDependencies();
@@ -62,14 +63,22 @@ public class Memory {
             if(!hasSegment(job.getJobName(), segment)) {
                 blockList.add(new MemoryBlock(job.getJobName(), segment, job.getSegmentSize(segment)));
                 freeSize -= job.getSegmentSize(segment);
+                runningTime += realocTime;
             }   
         }
-        
-            runningTime += realocTime;
             System.out.println("Segmento e suas dependencias alocados com sucesso");
         
         return true;
            
+    }
+    
+    public void removeJob(Job job) {
+        for(int i = 0; i < blockList.size(); i++) {
+            if(blockList.get(i).getId().equals(job.getJobName())) {
+                freeSize += blockList.get(i).getSizeSeg();
+                blockList.remove(i);
+            }
+        }
     }
     
     private boolean hasSegment(String id, int segNum) {
@@ -87,6 +96,7 @@ public class Memory {
     @Override
     public String toString() {
         StringBuilder msg = new StringBuilder();
+        msg.append("Memoria Principal\n");
         msg.append("\nLista de segmentos:\n");
         
         for(MemoryBlock mb : blockList) {
@@ -97,6 +107,7 @@ public class Memory {
         msg.append(waitingQueue.toString());
         
         msg.append("\nEspaco Livre: " + freeSize + "\n");
+        msg.append("\nTempo de operacao: " + runningTime + "\n");
         
         return msg.toString();
     }
