@@ -45,6 +45,10 @@ public class RoundQueue {
         return roundRobin.get(0);
     }
     
+    public String getHeadName() {
+        return roundRobin.get(0).getJobName();
+    }
+    
     public Job removeJob() {
         return roundRobin.remove(0);
     }

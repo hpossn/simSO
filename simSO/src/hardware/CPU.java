@@ -13,16 +13,14 @@ public class CPU {
     private final WaitingQueue waitingQueue;  // armazena a fila de espera
     private final RoundQueue roundQueue;      // relativo a implementacao do round robin
     private boolean busy;                     // armazena o status da cpu no momento
-    private int baseTimeSlice;                     // refere-se ao tempo base da fatia de tempo
-    private int maxCPUTime;                   // tempo de cpu
-    private int maxJobs;                      // numero maximo de jobs
+    private final int baseTimeSlice;                // refere-se ao tempo base da fatia de tempo
+    private final int maxJobs;                      // numero maximo de jobs
     
-    public CPU(int baseTimeSlice, int maxCPUTime, int maxJobs) {
+    public CPU(int baseTimeSlice, int maxJobs) {
         this.baseTimeSlice = baseTimeSlice;
-        this.maxCPUTime = maxCPUTime;
         this.maxJobs = maxJobs;
         waitingQueue = new WaitingQueue();
-        roundQueue = new RoundQueue(maxJobs);
+        roundQueue = new RoundQueue(this.maxJobs);
     }
     
     public boolean addJob(Job job, int time) {
@@ -54,21 +52,26 @@ public class CPU {
     }
     
     public Job executeTimeSlice() {
-        if(!busy)
+        if(!busy) {
+            System.out.println("Nada a ser executado");
             return null;
+        }
         
-        if(roundQueue.isEmpty())
+        if(roundQueue.isEmpty()) {
+            System.out.println("Nenhum JOB alocado");
             return null;
+        }
         
         Job job = roundQueue.getHead();
-        
         job.decrementProcessingTime(baseTimeSlice);
+        
+        System.out.println("Job: " + roundQueue.getHeadName() + " foi executado por " + baseTimeSlice + " unidades de tempo");
         
         return roundQueue.nextJob();
     }
     
     public boolean hasNext() {
-        return false;
+        return !(roundQueue.getSize() <= 1);
     }
     
     public boolean isBusy() {

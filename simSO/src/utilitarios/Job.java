@@ -10,18 +10,19 @@ import java.util.Random;
  */
 public class Job implements Comparable<Job> {
     private final int arrivalTime;            // tempo de chegada
-    private int processingTime;         // tempo de cpu
+    private int processingTime;               // tempo de cpu
     private final int priority;               // prioridade
     private int currentSegment;               // segmento atual
     private int totalNeededSpace;             // espaco total utilizado
-    private int numChamadasEntradaSaida;       // contabiliza o numero de chamadas de entrada e saida
+    private final int numIO;                  // contabiliza o numero de chamadas de entrada e saida
+    private final int totalTamanhoIO;               // tamanho de IO
     private final int[] segments;             // armazena os segmentos necessarios (cada posicao do array e o tamanho do segmento)
     private final String jobName;             // nome do Job
     private final Map<Integer, List<Integer>> segmentDependencies;    //Mapa com dependencia de segmentos
     
 
     public Job(int arrivalTime, int processingTime, int currentSegment, int priority,
-            String jobName, int[] segments, Map<Integer, List<Integer>> segmentDependencies) {
+            String jobName, int numIO, int sizeIO, int[] segments, Map<Integer, List<Integer>> segmentDependencies) {
         
         this.arrivalTime = arrivalTime;
         this.processingTime = processingTime;
@@ -30,6 +31,8 @@ public class Job implements Comparable<Job> {
         this.segments = segments;
         this.segmentDependencies = segmentDependencies;
         this.currentSegment = currentSegment;
+        this.numIO = numIO;
+        this.totalTamanhoIO = sizeIO;
         
         calculateTotalNeededSpace();
     }
@@ -128,6 +131,11 @@ public class Job implements Comparable<Job> {
     @Override
     public String toString() {
         return "Job: " + jobName + ", Tempo de chegada: " + arrivalTime;
+    }
+    
+    public String completeJobInfo() {
+        return String.format("Nome: %s, chegada: %6d, segmento atual: %2d, Total de Segmentos: %2d, Total de IO: %2d",
+                jobName, arrivalTime, currentSegment, segments.length, numIO);
     }
     
 }

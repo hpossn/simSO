@@ -12,7 +12,7 @@ package utilitarios;
 public class Event implements Comparable<Event> {
     
     public enum EventType {
-        START, JOB_ARRIVAL, ALLOCATE_MEMORY, ALLOCATE_CPU,
+        START, NEW_JOB, ALLOCATE_MEMORY, ALLOCATE_CPU,
         RELEASE_CPU, ALLOCATE_IO, RELEASE_IO, SWITCH_JOB, SWITCH_SEGMENT, SHUTDOWN
     }
     

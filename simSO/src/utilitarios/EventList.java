@@ -9,7 +9,7 @@ import java.util.List;
  * @author hpossani
  */
 public class EventList {
-    private List<Event> eventList;
+    private final List<Event> eventList;
     
     public EventList() {
         eventList = new ArrayList<>();
@@ -30,4 +30,13 @@ public class EventList {
     public Event removeHeadEvent() {
         return eventList.remove(0);
     }
+    
+    public Event getCurrentEvent() {
+        return eventList.get(0);
+    }
+    
+    public boolean isEmpty() {
+        return eventList.isEmpty();
+    }
+    
 }
