@@ -17,14 +17,25 @@ public class EventList {
     
     public void addEvent(Event event) {
         int posicao = 0;
+        int i;
         
-        for(int i = 0; i < eventList.size(); i++) {
-            if(event.compareTo(eventList.get(i)) < 0) {
-                posicao = i;
+        if(event.getType() == Event.EventType.SHUTDOWN) {
+            if(eventList.get(eventList.size() - 1).getType() == Event.EventType.SHUTDOWN) {
+                return;
             }
         }
         
-        eventList.add(posicao, event);
+        for(i = 0; i < eventList.size(); i++) {
+            if(event.compareTo(eventList.get(i)) < 0) {
+                posicao = i;
+                break;
+            }
+        }
+        
+        if(posicao == 0 && i > 0)
+            eventList.add(event);
+        else
+            eventList.add(posicao, event);
     }
     
     public Event removeHeadEvent() {
@@ -37,6 +48,19 @@ public class EventList {
     
     public boolean isEmpty() {
         return eventList.isEmpty();
+    }
+    
+    public int getLastTime() {
+        return eventList.get(eventList.size() - 1).getArrivalTime();
+    }
+    
+    public void removeAll() {
+        eventList.clear();
+    }
+    
+    @Override
+    public String toString() {
+        return eventList.toString();
     }
     
 }

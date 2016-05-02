@@ -13,7 +13,7 @@ public class Event implements Comparable<Event> {
     
     public enum EventType {
         START, NEW_JOB, ALLOCATE_MEMORY, ALLOCATE_CPU,
-        RELEASE_CPU, ALLOCATE_IO, RELEASE_IO, SWITCH_JOB, SWITCH_SEGMENT, SHUTDOWN
+        RELEASE_CPU, ALLOCATE_IO, RELEASE_IO, SWITCH_JOB, SWITCH_SEGMENT, MEMORY_READY, SHUTDOWN
     }
     
     private final EventType type;
@@ -40,7 +40,7 @@ public class Event implements Comparable<Event> {
     
     @Override
     public String toString() {
-        return "Evento\nTipo: " + type.toString() + "\nJob: " + job.getJobName() + "\nChegada: " + arrivalTime + "\n";
+        return "Tipo: " + type.toString() + " Job: " + job.getJobName() + " Chegada: " + arrivalTime + "\n";
     }
     
     @Override

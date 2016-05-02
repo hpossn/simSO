@@ -22,6 +22,8 @@ public class RoundQueue {
     }
     
     public boolean addJob(Job job) {
+        if(job == null)
+            return false;
         if(roundRobin.size() < MAX_SIZE) {
             roundRobin.add(job);
             return true;

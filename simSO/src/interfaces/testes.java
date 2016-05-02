@@ -29,7 +29,7 @@ public class testes {
     }*/
     
     public static void testarCPU() {
-        CPU cpu = new CPU(10, 2);
+        CPU cpu = new CPU(10, 2, 2);
         Map<Integer, List<Integer>> depen1;
         depen1 = new HashMap<>();
         List<Integer> list1 = new ArrayList<>();
@@ -151,7 +151,7 @@ public class testes {
         Job job7 = new Job(3, 0, 0, 4, "Job1", 0, 0, v1, depen1);
         Job job8 = new Job(12, 0, 0, 1, "Job2", 0, 0, v2, depen2);
         
-        Memory memoria = new Memory(30, 30, 2);
+        Memory memoria = new Memory(30, 2);
         
         System.out.println("Teste de memoria");
         System.out.println("");

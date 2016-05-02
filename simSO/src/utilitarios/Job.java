@@ -2,6 +2,7 @@ package utilitarios;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 
 /**
@@ -43,6 +44,10 @@ public class Job implements Comparable<Job> {
     
     public void decrementProcessingTime(int step) {
         this.processingTime -= step;
+    }
+    
+    public boolean hasFinished() {
+        return processingTime <= 0;
     }
     
     public int getNextSegment() {
@@ -134,8 +139,39 @@ public class Job implements Comparable<Job> {
     }
     
     public String completeJobInfo() {
-        return String.format("Nome: %s, chegada: %6d, segmento atual: %2d, Total de Segmentos: %2d, Total de IO: %2d",
-                jobName, arrivalTime, currentSegment, segments.length, numIO);
+        return String.format("Nome: %s, chegada: %6d, Prioridade: %2d segmento atual: %2d, Total de Segmentos: %2d, Total de IO: %2d",
+                jobName, arrivalTime, priority, currentSegment, segments.length, numIO);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Job other = (Job) obj;
+        
+        return (this.jobName.equals(other.getJobName()));
     }
     
+    /**
+     *
+     * @param obj
+     * @return
+     */
+    
+    
+    
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 61 * hash + Objects.hashCode(this.jobName);
+        return hash;
+    }
 }

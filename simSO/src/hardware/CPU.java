@@ -15,11 +15,14 @@ public class CPU {
     private boolean busy;                     // armazena o status da cpu no momento
     private final int baseTimeSlice;                // refere-se ao tempo base da fatia de tempo
     private final int maxJobs;                      // numero maximo de jobs
+    private final int overhead;
+    private String msg;
     
-    public CPU(int baseTimeSlice, int maxJobs) {
+    public CPU(int baseTimeSlice, int maxJobs, int overhead) {
         this.baseTimeSlice = baseTimeSlice;
         this.maxJobs = maxJobs;
         waitingQueue = new WaitingQueue();
+        this.overhead = overhead;
         roundQueue = new RoundQueue(this.maxJobs);
     }
     
@@ -28,46 +31,51 @@ public class CPU {
         
         if(!roundQueue.addJob(job)) {
             waitingQueue.addJob(job, time);
-            System.out.println("Job: " + job.getJobName() + " foi colocado na fila de espera");
+            msg = job.getJobName() + " foi colocado na fila de espera";
             return false;
         }
         
-        System.out.println("Job: " + job.getJobName() + " foi alocado na CPU");
+        msg = job.getJobName() + " foi alocado na CPU";
         return true;
 
     }
     
-    public void releaseJob(Job job, int time) {
+    public Job releaseJob(Job job, int time) {
        boolean remove = roundQueue.removeSpecificJob(job);
+       Job job2 = null;
        if(remove)
-           System.out.println("Job: " + job.getJobName() + " foi removido da CPU");
+           msg = job.getJobName() + " foi removido da CPU";
        else
-           System.out.println("Job: " + job.getJobName() + " nao encontrado na CPU");
+           msg = job.getJobName() + " nao encontrado na CPU";
        
-       if(!waitingQueue.isEmpty()) 
-           roundQueue.addJob(waitingQueue.removeJob());
+       if(!waitingQueue.isEmpty()) {
+           job2 = waitingQueue.removeJob();
+           roundQueue.addJob(job2);
+       }
        
-       if(roundQueue.isEmpty())
+       if(roundQueue.isEmpty() && waitingQueue.isEmpty())
            busy = false;
+       
+       return job2;
     }
     
     public Job executeTimeSlice() {
-        if(!busy) {
-            System.out.println("Nada a ser executado");
+        /*if(!busy) {
+            msg = "Nada a ser executado";
             return null;
-        }
+        }*/
         
         if(roundQueue.isEmpty()) {
-            System.out.println("Nenhum JOB alocado");
+            msg = "Nenhum JOB alocado";
             return null;
+        } else {
+            Job job = roundQueue.getHead();
+            job.decrementProcessingTime(baseTimeSlice);
+
+            msg = roundQueue.getHeadName() + " em execucao por um timeslice";
+
+            return roundQueue.nextJob();
         }
-        
-        Job job = roundQueue.getHead();
-        job.decrementProcessingTime(baseTimeSlice);
-        
-        System.out.println("Job: " + roundQueue.getHeadName() + " foi executado por " + baseTimeSlice + " unidades de tempo");
-        
-        return roundQueue.nextJob();
     }
     
     public boolean hasNext() {
@@ -81,5 +89,9 @@ public class CPU {
     @Override
     public String toString() {
         return "";
+    }
+    
+    public String getMsg() {
+        return msg;
     }
 }

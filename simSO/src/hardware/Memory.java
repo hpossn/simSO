@@ -15,15 +15,15 @@ public class Memory {
     private final int MAX_SIZE;         // Tamanho maximo da memoria
     private int freeSize;               // Tamanho livre
     
-    private int realocTime;             // Configura o tempo de armazenamento
+    private final int realocTime;             // Configura o tempo de armazenamento
     private int runningTime = 0;        // Configura o tempo de operacao
     
-    private WaitingQueue waitingQueue;
-    private List<MemoryBlock> blockList;
+    private final WaitingQueue waitingQueue;
+    private final List<MemoryBlock> blockList;
 
-    public Memory(int MAX_SIZE, int freeSize, int realocTime) {
+    public Memory(int MAX_SIZE, int realocTime) {
         this.MAX_SIZE = MAX_SIZE;
-        this.freeSize = freeSize;
+        this.freeSize = MAX_SIZE;
         this.realocTime = realocTime;
         waitingQueue = new WaitingQueue();
         blockList = new ArrayList<>();
@@ -40,14 +40,13 @@ public class Memory {
             }
             
             if(contem) {
-                System.out.println("O segmento e suas dependencias ja foi alocado anteriormente");
+                //msg = "O segmento e suas dependencias ja foi alocado anteriormente";
                 return true;
             }
         }
         
         if(freeSize < job.getFreeSpaceNeeded()) {
             waitingQueue.addJob(job, arrivalTime);
-            System.out.println("Espaco indisponivel. Fila de espera");
             return false;
         }
         
@@ -66,7 +65,7 @@ public class Memory {
                 runningTime += realocTime;
             }   
         }
-            System.out.println("Segmento e suas dependencias alocados com sucesso");
+            //msg = "Segmento e suas dependencias alocados com sucesso";
         
         return true;
            
@@ -99,16 +98,20 @@ public class Memory {
         msg.append("Memoria Principal\n");
         msg.append("\nLista de segmentos:\n");
         
-        for(MemoryBlock mb : blockList) {
+        blockList.stream().forEach((mb) -> {
             msg.append(String.format("\tID: %s, Numero: %d, Tamanho: %d\n", mb.getId(), mb.getNumSeg(), mb.getSizeSeg()));
-        }
+        });
         
         msg.append("\n");
         msg.append(waitingQueue.toString());
         
-        msg.append("\nEspaco Livre: " + freeSize + "\n");
-        msg.append("\nTempo de operacao: " + runningTime + "\n");
+        msg.append("\nEspaco Livre: ").append(freeSize).append("\n");
+        msg.append("\nTempo de operacao: ").append(runningTime).append("\n");
         
         return msg.toString();
+    }
+    
+    public int getRunningTime() {
+        return runningTime;
     }
 }
