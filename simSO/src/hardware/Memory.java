@@ -100,8 +100,10 @@ public class Memory {
             
             if(addJob(job, job.getArrivalTime()))
                 return job;
-            else
-                waitingQueue.addJob(job, job.getArrivalTime());
+            else {
+               // waitingQueue.addJob(job, job.getArrivalTime());
+                return null;
+            }
         }
         
         return job;

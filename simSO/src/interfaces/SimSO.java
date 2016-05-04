@@ -223,14 +223,14 @@ public class SimSO {
 
     private void allocateMemoryEvent(Event currentEvent) {
         Job job = currentEvent.getJob();
-        System.out.println(String.format("(%6d) Evento: Alocacao de Memoria para %s no segmento atual %d", currentTime, 
-                job.getJobName(), job.getCurrentSegment()));
+        
         
         if(!memory.addJob(job, currentTime)) 
-            System.out.println(String.format("(%6d) Evento: Resultado da alocacao para %s: %s",
-                    currentTime, job.getJobName(), "Espaco indisponivel, foi para fila de espera"));
-        else {
-            //currentTime += memory.getRunningTime();
+            System.out.println(String.format("(%6d) Evento: Espaco indisponivel para %s, foi para o disco.",
+                    currentTime, job.getJobName()));
+        else {            
+            System.out.println(String.format("(%6d) Evento: Alocacao de Memoria para %s no segmento atual %d em andamento", currentTime, 
+                job.getJobName(), job.getCurrentSegment()));
             eventList.addEvent(new Event(Event.EventType.MEMORY_READY, job, memory.getRunningTime() + currentTime));
         }
     }
@@ -252,17 +252,18 @@ public class SimSO {
             t += baseTimeSlice + overhead;
         }
         
-        /*if(job3 != null) {
-            eventList.addEvent(new Event(Event.EventType.MEMORY_READY, job3, currentTime + memory.getRunningTime() + 1));
-            System.out.println(String.format("(%6d) Evento: Espaco liberado na memoria para %s.", currentTime, job3.getJobName()));
-        }*/
         
         if(!cpu.getMsg().contains("nao encontrado na CPU"))        
             System.out.println(String.format("(%6d) Evento: Saida da CPU. %s",
                 currentTime, cpu.getMsg()));
         
+        if(job3 != null) {
+            eventList.addEvent(new Event(Event.EventType.MEMORY_READY, job3, currentTime + memory.getRunningTime() + 1));
+            System.out.println(String.format("(%6d) Evento: Espaco liberado na memoria para %s.", currentTime, job3.getJobName()));
+        }
+        
         if(job2 != null) {
-            System.out.println(String.format("(%6d) Evento: %s saiu da fila de espera",
+            System.out.println(String.format("(%6d) Evento: CPU Disponivel. %s foi para a memoria e esta na CPU.",
                 currentTime, job2.getJobName()));
             
             
@@ -270,11 +271,6 @@ public class SimSO {
             
             //System.out.println(eventList.toString());
         }
-        
-        /*if(!cpu.isBusy()) {
-            int time2 = eventList.getLastTime();
-            eventList.addEvent(new Event(Event.EventType.IDLE, job2, time2));
-        }*/
     }
 
     private void releaseIOEvent(Event currentEvent) {
@@ -284,17 +280,6 @@ public class SimSO {
         System.out.println(String.format("(%6d) Evento: %s liberou dispositivo %s",
                 currentTime, currentEvent.getJob().getJobName(), printer.getName()));
     }
-
-    /*private void idleEvent(Event currentEvent) {
-        System.out.println(String.format("(%6d) Nada a ser executado",
-                currentTime));
-        
-        System.out.println(eventList.toString());
-        
-        if(currentTime >= finalTime || eventList.isEmpty()) {
-            eventList.addEvent(new Event(Event.EventType.SHUTDOWN, finalJob, currentTime));
-        }
-    }*/
 
     private void shutdownEvent(Event currentEvent) {
         eventList.removeAll();
@@ -372,7 +357,7 @@ public class SimSO {
     }
 
     private void memoryReadyEvent(Event currentEvent) {
-        System.out.println(String.format("(%6d) Evento: Resultado da alocacao para %s: %s",
+        System.out.println(String.format("(%6d) Evento: Alocacao de memoria concluida para %s: %s",
                 currentTime, currentEvent.getJob().getJobName(),"Segmento e suas dependencias alocados com sucesso"));
         
         eventList.addEvent(new Event(Event.EventType.ALLOCATE_CPU, currentEvent.getJob(), currentTime + overhead));

@@ -1,6 +1,6 @@
 max_sim:5000
 ini_sim:0
-max_memory:500
+max_memory:300
 max_jobs:2
 time_slice:5
 over_head:2
