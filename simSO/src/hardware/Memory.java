@@ -92,6 +92,21 @@ public class Memory {
         return false;
     }
     
+    public Job fromWaitToMemory() {
+        Job job = null;
+        
+        if(!waitingQueue.isEmpty()) {
+            job = waitingQueue.removeJob();
+            
+            if(addJob(job, job.getArrivalTime()))
+                return job;
+            else
+                waitingQueue.addJob(job, job.getArrivalTime());
+        }
+        
+        return job;
+    }
+    
     @Override
     public String toString() {
         StringBuilder msg = new StringBuilder();

@@ -62,5 +62,22 @@ public class EventList {
     public String toString() {
         return eventList.toString();
     }
+
+    public int getFurthestSwitchJob() {
+        int last = 0;
+        boolean found = false;
+        
+        for(int i = 0; i < eventList.size(); i++) {
+            if(eventList.get(i).getType() == Event.EventType.SWITCH_JOB) {
+                last = i;
+                found = true;
+            }
+        }
+        
+        if(found)
+            return eventList.get(last).getArrivalTime();
+        else
+            return -1;
+    }
     
 }

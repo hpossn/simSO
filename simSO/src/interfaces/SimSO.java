@@ -1,7 +1,9 @@
 package interfaces;
 
 import hardware.CPU;
+import hardware.Device;
 import hardware.Memory;
+import hardware.Printer;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -27,10 +29,12 @@ public class SimSO {
     private int baseTimeSlice;
     private int maxJobs;
     private int overhead;
-    private int nextCPUAlocation;
+    private int currentCPUAlocation;
     
     private Memory memory;
     private CPU cpu;
+    private Device printer1;
+    private Device printer2;
     
     private Job finalJob;
     
@@ -91,9 +95,15 @@ public class SimSO {
     private void setJobsArrivalInEventList() {
         jobsList.stream().forEach((job) -> {
             eventList.addEvent(new Event(Event.EventType.NEW_JOB, job, job.getArrivalTime()));
+            
+            /*if(job.getNumIO() > 0) {
+                eventList.addEvent(new Event(Event.EventType.ALLOCATE_IO, job, job.getArrivalTime() + overhead));
+            } */
         });
         
         eventList.addEvent(new Event(Event.EventType.SHUTDOWN, finalJob, finalTime));
+        
+        
     }
     
     private void setInicialParamters() {
@@ -104,6 +114,9 @@ public class SimSO {
         baseTimeSlice = paramtersMap.get("time_slice");
         maxJobs = paramtersMap.get("max_jobs");
         overhead = paramtersMap.get("over_head");
+        
+        printer1 = new Printer(overhead, "Impressora 1");
+        printer2 = new Printer(overhead, "Impressora 2");
         
         int[] i = {1};
         finalJob = new Job(finalTime, 0, 0, 0, "final", 0, 0, i, null);
@@ -178,11 +191,34 @@ public class SimSO {
         System.out.println(String.format("(%6d) Evento: Alocacao de CPU para  %s. %s",
                 currentTime, job.getJobName(), cpu.getMsg()));
         
-        eventList.addEvent(new Event(Event.EventType.SWITCH_JOB, job, currentTime + overhead));
+        int t = eventList.getFurthestSwitchJob();
+
+        if (t == -1) {
+            t = currentTime + baseTimeSlice + overhead;
+        } else {
+            t += baseTimeSlice + overhead;
+        }
+        
+        if(job.getNumIO() > 0) {
+                eventList.addEvent(new Event(Event.EventType.ALLOCATE_IO, job, t + 1));
+        }
+        
+        eventList.addEvent(new Event(Event.EventType.SWITCH_JOB, job, t));
     }
 
     private void allocateIOEvent(Event currentEvent) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        
+        Device  printer;
+        if(printer1.getQueueSize() <= printer2.getQueueSize()) {
+            printer = printer1;
+        } else {
+            printer = printer2;
+        }
+        
+        System.out.println(String.format("(%6d) Evento: Alocacao de dispositivo %s para %s", currentTime, 
+                printer.getName(), currentEvent.getJob().getJobName()));
+        
+        printer.insertJob(currentEvent.getJob());
     }
 
     private void allocateMemoryEvent(Event currentEvent) {
@@ -204,15 +240,35 @@ public class SimSO {
         
         Job job2 = cpu.releaseJob(job1, currentTime);
         
-        int time = currentTime + overhead + baseTimeSlice;
+        memory.removeJob(job1);
         
-        System.out.println(String.format("(%6d) Evento: Saida da CPU. %s",
+        Job job3 = memory.fromWaitToMemory();
+        
+        int t = eventList.getFurthestSwitchJob();
+
+        if (t == -1) {
+            t = currentTime + baseTimeSlice + overhead;
+        } else {
+            t += baseTimeSlice + overhead;
+        }
+        
+        /*if(job3 != null) {
+            eventList.addEvent(new Event(Event.EventType.MEMORY_READY, job3, currentTime + memory.getRunningTime() + 1));
+            System.out.println(String.format("(%6d) Evento: Espaco liberado na memoria para %s.", currentTime, job3.getJobName()));
+        }*/
+        
+        if(!cpu.getMsg().contains("nao encontrado na CPU"))        
+            System.out.println(String.format("(%6d) Evento: Saida da CPU. %s",
                 currentTime, cpu.getMsg()));
         
         if(job2 != null) {
             System.out.println(String.format("(%6d) Evento: %s saiu da fila de espera",
                 currentTime, job2.getJobName()));
-            eventList.addEvent(new Event(Event.EventType.SWITCH_JOB, job2, time));
+            
+            
+            eventList.addEvent(new Event(Event.EventType.SWITCH_JOB, job2, t));
+            
+            //System.out.println(eventList.toString());
         }
         
         /*if(!cpu.isBusy()) {
@@ -222,7 +278,11 @@ public class SimSO {
     }
 
     private void releaseIOEvent(Event currentEvent) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Device printer;
+        printer = printer1.isJobHere(currentEvent.getJob()) ? printer1 : printer2;
+        
+        System.out.println(String.format("(%6d) Evento: %s liberou dispositivo %s",
+                currentTime, currentEvent.getJob().getJobName(), printer.getName()));
     }
 
     /*private void idleEvent(Event currentEvent) {
@@ -253,19 +313,58 @@ public class SimSO {
             System.out.println(String.format("(%6d) Evento: Execucao. %s",
                 currentTime, cpu.getMsg()));
         } else {
-            System.out.println(String.format("(%6d) Evento: Execucao. %s",
+            if(!cpu.getMsg().equals("finished")) {
+                System.out.println(String.format("(%6d) Evento: Execucao. %s",
                 currentTime, cpu.getMsg()));
+                
+                if(!job.hasFinished()) {
+                    eventList.addEvent(new Event(Event.EventType.SWITCH_SEGMENT, job, currentTime + overhead));
+                    
+                    if(!job.hasFinishedIO()) {
+                        Device printer;
+                        
+                        if(printer1.insertJob(job)) {
+                            printer = printer1;
+                        } else {
+                            printer = printer2;
+                        }
+                        
+                        Job printerJob = printer.executeJob(job);
+                        
+                        if(printerJob != null) {
+                            if(printerJob.hasFinishedIO()) {
+                                eventList.addEvent(new Event(Event.EventType.RELEASE_IO, job, currentTime + overhead + 1));
+                            }
+                        }
+                    }
+                }
+            }
             
             if(currentEvent.getJob().hasFinished()) {
                 eventList.addEvent(new Event(Event.EventType.RELEASE_CPU, currentEvent.getJob(), currentTime + overhead));
             }
-            
-            eventList.addEvent(new Event(Event.EventType.SWITCH_JOB, job, currentTime + baseTimeSlice + overhead));
         }
     }
 
     private void switchSegmentEvent(Event currentEvent) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Job job = currentEvent.getJob();
+        
+        int old = job.getCurrentSegment();
+        int segment = job.getNextSegment();
+        
+        int t = eventList.getFurthestSwitchJob();
+        
+        System.out.println(String.format("(%6d) Evento: Troca de segmento em %s %d -> %d",
+                currentTime, currentEvent.getJob().getJobName(), old, segment));
+
+        if (t == -1) {
+            t = currentTime + baseTimeSlice + overhead;
+        } else {
+            t += baseTimeSlice + overhead;
+        }
+
+        eventList.addEvent(new Event(Event.EventType.SWITCH_JOB, job, t));
+        
     }
 
     private void errorEvent() {
@@ -283,10 +382,5 @@ public class SimSO {
         if(currentTime < arrivalTime) {
             currentTime = arrivalTime;
         }
-    }
-    
-    private int nextCPUAlocation() {
-        nextCPUAlocation += baseTimeSlice;
-        return nextCPUAlocation;
     }
 }

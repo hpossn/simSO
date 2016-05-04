@@ -43,15 +43,19 @@ public class CPU {
     public Job releaseJob(Job job, int time) {
        boolean remove = roundQueue.removeSpecificJob(job);
        Job job2 = null;
-       if(remove)
+       if(remove) {
            msg = job.getJobName() + " foi removido da CPU";
-       else
-           msg = job.getJobName() + " nao encontrado na CPU";
+        
+           if (!waitingQueue.isEmpty()) {
+               job2 = waitingQueue.removeJob();
+               roundQueue.addJob(job2);
+           }
        
-       if(!waitingQueue.isEmpty()) {
-           job2 = waitingQueue.removeJob();
-           roundQueue.addJob(job2);
        }
+       else
+           msg = "nao encontrado na CPU";
+       
+       
        
        if(roundQueue.isEmpty() && waitingQueue.isEmpty())
            busy = false;
@@ -70,10 +74,14 @@ public class CPU {
             return null;
         } else {
             Job job = roundQueue.getHead();
-            job.decrementProcessingTime(baseTimeSlice);
+            
+            if(job.hasFinished())
+                msg = "finished";
+            else {
+                job.decrementProcessingTime(baseTimeSlice);
 
-            msg = roundQueue.getHeadName() + " em execucao por um timeslice";
-
+                msg = roundQueue.getHeadName() + " em execucao por um timeslice";
+            }
             return roundQueue.nextJob();
         }
     }

@@ -15,7 +15,8 @@ public class Job implements Comparable<Job> {
     private final int priority;               // prioridade
     private int currentSegment;               // segmento atual
     private int totalNeededSpace;             // espaco total utilizado
-    private final int numIO;                  // contabiliza o numero de chamadas de entrada e saida
+    private int totalSegmentChanges;
+    private int numIO;                  // contabiliza o numero de chamadas de entrada e saida
     private final int totalTamanhoIO;               // tamanho de IO
     private final int[] segments;             // armazena os segmentos necessarios (cada posicao do array e o tamanho do segmento)
     private final String jobName;             // nome do Job
@@ -35,7 +36,13 @@ public class Job implements Comparable<Job> {
         this.numIO = numIO;
         this.totalTamanhoIO = sizeIO;
         
+        this.totalSegmentChanges = 0;
+        
         calculateTotalNeededSpace();
+    }
+    
+    public int getNumIO() {
+        return numIO;
     }
     
     public int getProcessingTime() {
@@ -59,8 +66,10 @@ public class Job implements Comparable<Job> {
         if(listDep != null)
             seed = listDep.size();
         
-        if(seed > 0)
+        if(seed > 0) {
             currentSegment = segmentDependencies.get(currentSegment).get(rand.nextInt(seed));
+            totalSegmentChanges++;
+        }
         
         return currentSegment;
     }
@@ -78,6 +87,14 @@ public class Job implements Comparable<Job> {
         }
         
         return total;
+    }
+    
+    public boolean hasFinishedIO() {
+        return numIO <= 0;
+    }
+    
+    public void decrementIO() {
+        numIO = 0;
     }
     
     public int getFreeSpaceNeeded() {

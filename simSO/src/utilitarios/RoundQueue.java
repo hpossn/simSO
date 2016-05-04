@@ -18,7 +18,7 @@ public class RoundQueue {
     
     public RoundQueue(int maxSize) {
         this.MAX_SIZE = maxSize;
-        roundRobin = new ArrayList<>(MAX_SIZE);
+        roundRobin = new ArrayList<>(this.MAX_SIZE);
     }
     
     public boolean addJob(Job job) {
